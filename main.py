@@ -39,13 +39,11 @@ def index_finger_up(landmarks):
 def all_fingers_up(landmarks, hand_label="Right"):
     fingers_up = []
 
-    # Thumb
     if hand_label == "Right":
         fingers_up.append(landmarks[4][0] > landmarks[3][0])
     else:
         fingers_up.append(landmarks[4][0] < landmarks[3][0])
 
-    # Other fingers
     for tip, pip in zip([8, 12, 16, 20], [6, 10, 14, 18]):
         fingers_up.append(landmarks[tip][1] < landmarks[pip][1])
 
@@ -64,7 +62,6 @@ while cap.isOpened():
     if not ret:
         break
 
-    # Mirror frame (selfie view)
     frame = cv2.flip(frame, 1)
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -107,31 +104,54 @@ while cap.isOpened():
     elif left_index_up and right_index_up:
         current_gesture = "down"
     elif right_index_up and not right_all_fingers_up:
-        current_gesture = "right"
-    elif left_index_up and not left_all_fingers_up:
         current_gesture = "left"
+    elif left_index_up and not left_all_fingers_up:
+        current_gesture = "right"
 
     gesture_history.append(current_gesture)
     smoothed_gesture = most_common_gesture(gesture_history)
 
     # -------------------------
-    # Trigger keyboard events (LEFT ↔ RIGHT FIXED)
+    # Trigger keyboard events
     # -------------------------
     if smoothed_gesture and time.time() - last_trigger_time > trigger_cooldown:
         if smoothed_gesture == "left":
-            keyboard.press_and_release("right")   # FIXED
-            print("↪️ Turn Right")
+            keyboard.press_and_release("left")
         elif smoothed_gesture == "right":
-            keyboard.press_and_release("left")    # FIXED
-            print("↩️ Turn Left")
+            keyboard.press_and_release("right")
         elif smoothed_gesture == "down":
             keyboard.press_and_release("down")
-            print("⬇️ Slide Down")
         elif smoothed_gesture == "jump":
             keyboard.press_and_release("up")
-            print("⬆️ Jump")
 
         last_trigger_time = time.time()
+
+    # -------------------------
+    # Gesture Position Guide (VERTICAL ALIGN)
+    # -------------------------
+    y_start = 40
+    line_gap = 30
+
+    cv2.putText(frame, "RIGHT HAND : Index Up = RIGHT MOVE",
+                (20, y_start),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+
+    cv2.putText(frame, "LEFT HAND  : Index Up = LEFT MOVE",
+                (20, y_start + line_gap),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+
+    cv2.putText(frame, "RIGHT HANDS OPEN = JUMP",
+                (20, y_start + 2 * line_gap),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+    cv2.putText(frame, "BOTH INDEX UP = SLIDE",
+                (20, y_start + 3 * line_gap),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+
+    if smoothed_gesture:
+        cv2.putText(frame, f"Detected: {smoothed_gesture.upper()}",
+                    (20, frame.shape[0] - 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 3)
 
     cv2.imshow("Temple Run Gesture Control", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
