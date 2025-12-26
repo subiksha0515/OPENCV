@@ -27,8 +27,8 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 gesture_history = deque(maxlen=5)
-last_trigger_time = 0
-trigger_cooldown = 0.3
+last_trigger_time = 0 #prevent key spamming
+trigger_cooldown = 0.3 #only one key press every 0.3 seconds
 
 # -------------------------
 # Helper functions
@@ -36,9 +36,10 @@ trigger_cooldown = 0.3
 def index_finger_up(landmarks):
     return landmarks[8][1] < landmarks[6][1]
 
-def all_fingers_up(landmarks, hand_label="Right"):
-    fingers_up = []
+def all_fingers_up(landmarks, hand_label="Right"): #detects open palm 
+    fingers_up = []  #stores true or false for each finger
 
+#thumb logic
     if hand_label == "Right":
         fingers_up.append(landmarks[4][0] > landmarks[3][0])
     else:
@@ -153,7 +154,7 @@ while cap.isOpened():
                     (20, frame.shape[0] - 40),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 3)
 
-    cv2.imshow("Temple Run Gesture Control", frame)
+    cv2.imshow("Subway sufers Game", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
