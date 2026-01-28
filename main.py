@@ -8,7 +8,6 @@ from mediapipe.tasks.python.vision.hand_landmarker import (
     HandLandmarker,
     HandLandmarkerOptions
 )
-
 # -------------------------
 # HandLandmarker setup
 # -------------------------
@@ -28,7 +27,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 gesture_history = deque(maxlen=5)
 last_trigger_time = 0 #prevent key spamming
-trigger_cooldown = 0.3 #only one key press every 0.3 seconds
+trigger_cooldown = 0.3 #only one key press every 0.3 seconds 
 
 # -------------------------
 # Helper functions
